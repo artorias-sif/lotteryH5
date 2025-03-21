@@ -401,22 +401,47 @@
 
         .admin-panel {
             position: fixed;
-            bottom: 20px;
             right: 20px;
-            background: rgba(0, 0, 0, 0.8);
+            bottom: 20px;
+            background: rgba(255, 255, 255, 0.95);
             padding: 15px;
-            border-radius: 10px;
-            backdrop-filter: blur(5px);
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             transform: translateX(120%);
             transition: transform 0.3s ease;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
         }
 
         .admin-panel.show {
             transform: translateX(0);
+        }
+
+        .admin-panel button {
+            display: block;
+            width: 100%;
+            padding: 8px 15px;
+            margin: 5px 0;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .admin-panel button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .admin-panel button.reset-btn {
+            background: linear-gradient(135deg, #FF6B6B, #FF4757);
+        }
+
+        .admin-panel button.reset-btn:hover {
+            background: linear-gradient(135deg, #FF4757, #FF6B6B);
         }
 
         .admin-btn {
@@ -943,9 +968,30 @@
         const managePrizesBtn = document.getElementById('managePrizes');
 
         // 切换管理面板显示
-        adminControlBtn.addEventListener('click', () => {
+        function toggleAdminPanel() {
+            const adminPanel = document.querySelector('.admin-panel');
             adminPanel.classList.toggle('show');
-            adminControlBtn.classList.toggle('show');
+        }
+
+        // 初始化管理面板
+        function initializeAdminPanel() {
+            const adminPanel = document.querySelector('.admin-panel');
+            adminPanel.innerHTML = `
+                <button onclick="toggleAdminPanel()">关闭管理面板</button>
+                <button onclick="resetAllPrizes()" class="reset-btn">重置所有奖品</button>
+            `;
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeBlindBoxes();
+            initializeAdminPanel();
+        });
+
+        // 点击管理按钮显示面板
+        adminControlBtn.addEventListener('click', () => {
+            const adminPanel = document.querySelector('.admin-panel');
+            adminPanel.classList.add('show');
         });
 
         const prizeModal = document.getElementById('prizeModal');
@@ -1192,6 +1238,28 @@
             setTimeout(() => {
                 confetti.remove();
             }, 3000);
+        }
+
+        // 重置所有奖品状态
+        function resetAllPrizes() {
+            if (!confirm('确定要重置所有奖品状态吗？这将清除所有已抽中的记录。')) {
+                return;
+            }
+
+            // 重置所有奖品的状态
+            prizes.forEach(prize => {
+                prize.isClaimed = false;
+                prize.claimed_at = null;
+            });
+
+            // 清除localStorage中的记录
+            localStorage.removeItem('prizeRecords');
+
+            // 重新初始化盲盒
+            initializeBlindBoxes();
+
+            // 显示成功提示
+            alert('所有奖品状态已重置！');
         }
     </script>
 </body>
