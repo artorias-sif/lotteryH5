@@ -651,19 +651,65 @@
 
         .firework-particle {
             position: absolute;
-            width: 4px;
-            height: 4px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
-            animation: explode 1s ease-out forwards;
+            animation: launch 0.6s ease-out forwards, explode 1s ease-out forwards;
+            box-shadow: 0 0 10px currentColor;
         }
 
-        @keyframes explode {
+        @keyframes launch {
             0% {
                 transform: translate(0, 0) scale(1);
                 opacity: 1;
             }
             100% {
-                transform: translate(var(--tx), var(--ty)) scale(0);
+                transform: translate(var(--tx), var(--ty)) scale(1.2);
+                opacity: 1;
+            }
+        }
+
+        @keyframes explode {
+            0% {
+                transform: translate(var(--tx), var(--ty)) scale(1.2);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(
+                    calc(var(--tx) + var(--ex)),
+                    calc(var(--ty) + var(--ey))
+                ) scale(0);
+                opacity: 0;
+            }
+        }
+
+        .confetti {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9998;
+        }
+
+        .confetti-piece {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: var(--color);
+            animation: fall 2s linear forwards;
+            transform: rotate(45deg);
+            opacity: 0.8;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
                 opacity: 0;
             }
         }
@@ -673,7 +719,7 @@
     <div class="container">
         <div class="title-container">
             <h1 class="title">盲盒抽奖</h1>
-            <p class="subtitle">小朋友，和姨姨一起开启快乐的一天</p>
+            <p class="subtitle">小朋友们，和我一起开启快乐的一天</p>
         </div>
         <div class="blind-boxes-grid" id="blindBoxesGrid"></div>
     </div>
@@ -958,26 +1004,38 @@
             const firework = document.createElement('div');
             firework.className = 'firework';
             
-            const colors = ['#FFD700', '#FF69B4', '#4ECDC4', '#FF6B6B', '#87CEEB', '#FFA500'];
-            const particleCount = 50;
+            const colors = ['#FFD700', '#FF69B4', '#4ECDC4', '#FF6B6B', '#87CEEB', '#FFA500', '#FF1493', '#00FF00', '#FF4500', '#FFB6C1', '#00CED1', '#FFD700'];
+            const particleCount = 80;
+            
+            // 计算发射目标点（从底部发射到点击位置）
+            const startY = window.innerHeight;
+            const targetX = x;
+            const targetY = y;
             
             for (let i = 0; i < particleCount; i++) {
                 const particle = document.createElement('div');
                 particle.className = 'firework-particle';
                 
-                // 随机角度和距离
+                // 计算发射轨迹
                 const angle = (Math.PI * 2 * i) / particleCount;
-                const distance = 100 + Math.random() * 50;
+                const distance = 200 + Math.random() * 150;
                 
-                // 计算终点位置
-                const tx = Math.cos(angle) * distance;
-                const ty = Math.sin(angle) * distance;
+                // 计算爆炸后的扩散距离
+                const explodeDistance = 150 + Math.random() * 100;
                 
-                particle.style.setProperty('--tx', `${tx}px`);
-                particle.style.setProperty('--ty', `${ty}px`);
-                particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                // 设置发射轨迹
+                particle.style.setProperty('--tx', `${targetX - x}px`);
+                particle.style.setProperty('--ty', `${targetY - startY}px`);
+                
+                // 设置爆炸扩散
+                particle.style.setProperty('--ex', `${Math.cos(angle) * explodeDistance}px`);
+                particle.style.setProperty('--ey', `${Math.sin(angle) * explodeDistance}px`);
+                
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                particle.style.backgroundColor = color;
+                particle.style.color = color;
                 particle.style.left = `${x}px`;
-                particle.style.top = `${y}px`;
+                particle.style.top = `${startY}px`;
                 
                 firework.appendChild(particle);
             }
@@ -987,20 +1045,68 @@
             // 动画结束后移除烟花元素
             setTimeout(() => {
                 firework.remove();
-            }, 1000);
+            }, 1600);
         }
 
         // 创建多个烟花
         function createFireworks(x, y) {
-            const fireworkCount = 5;
+            const fireworkCount = 4;
             for (let i = 0; i < fireworkCount; i++) {
                 setTimeout(() => {
                     createFirework(
-                        x + (Math.random() - 0.5) * 100,
-                        y + (Math.random() - 0.5) * 100
+                        x + (Math.random() - 0.5) * 150,
+                        y + (Math.random() - 0.5) * 150
                     );
-                }, i * 200);
+                }, i * 250);
             }
+            // 添加撒花效果
+            createConfetti();
+        }
+
+        // 创建撒花效果
+        function createConfetti() {
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti';
+            
+            const colors = ['#FFD700', '#FF69B4', '#4ECDC4', '#FF6B6B', '#87CEEB', '#FFA500', '#FF1493', '#00FF00', '#FF4500', '#FFB6C1', '#00CED1', '#FFD700'];
+            const pieceCount = 50; // 增加花瓣数量
+            
+            for (let i = 0; i < pieceCount; i++) {
+                const piece = document.createElement('div');
+                piece.className = 'confetti-piece';
+                
+                // 随机起始位置
+                const startX = Math.random() * window.innerWidth;
+                piece.style.left = `${startX}px`;
+                
+                // 随机颜色
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                piece.style.setProperty('--color', color);
+                
+                // 随机大小
+                const size = 8 + Math.random() * 8;
+                piece.style.width = `${size}px`;
+                piece.style.height = `${size}px`;
+                
+                // 随机旋转
+                piece.style.transform = `rotate(${Math.random() * 360}deg)`;
+                
+                // 随机下落时间（加快速度）
+                const duration = 1 + Math.random() * 1.5;
+                piece.style.animationDuration = `${duration}s`;
+                
+                // 随机延迟（减少延迟时间）
+                piece.style.animationDelay = `${Math.random() * 1}s`;
+                
+                confetti.appendChild(piece);
+            }
+            
+            document.body.appendChild(confetti);
+            
+            // 动画结束后移除撒花元素（减少等待时间）
+            setTimeout(() => {
+                confetti.remove();
+            }, 3000);
         }
     </script>
 </body>
