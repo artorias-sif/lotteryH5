@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>盲盒抽奖</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+            font-family: Arial, sans-serif;
+            color: #fff;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .container {
+            text-align: center;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 430px;
+            box-sizing: border-box;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        .title-container {
+            position: relative;
+            margin-bottom: 30px;
+            padding: 8px;
+            width: 100%;
+            max-width: 380px;
+            position: absolute;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .title-container::before,
+        .title-container::after {
+            content: '🎁';
+            position: absolute;
+            font-size: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            animation: bounce 2s infinite;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+        }
+
+        .title-container::before {
+            left: -25px;
+            animation-delay: 0s;
+        }
+
+        .title-container::after {
+            right: -25px;
+            animation-delay: 0.5s;
+        }
+
+        h1 {
+            font-size: 1.8em;
+            margin: 0;
+            background: linear-gradient(45deg, 
+                #FFD700, #FFA500, #FF69B4, #FFD700);
+            background-size: 300% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            animation: shine 3s linear infinite;
+            position: relative;
+            display: inline-block;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        h1::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -20px;
+            right: -20px;
+            bottom: -10px;
+            background: linear-gradient(45deg, 
+                rgba(255, 215, 0, 0.15),
+                rgba(255, 165, 0, 0.15),
+                rgba(255, 105, 180, 0.15),
+                rgba(255, 215, 0, 0.15));
+            border-radius: 15px;
+            z-index: -1;
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(-50%) scale(1);
+            }
+            50% {
+                transform: translateY(-50%) scale(1.2);
+            }
+        }
+
+        @keyframes shine {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        @keyframes glow {
+            0%, 100% {
+                opacity: 0.5;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.8;
+                transform: scale(1.05);
+            }
+        }
+
+        .subtitle {
+            font-size: 0.9em;
+            color: rgba(255, 255, 255, 0.9);
+            margin-top: 6px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 1s ease-out;
+            font-weight: 500;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .blind-boxes-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            padding: 8px;
+            width: 100%;
+            max-width: 380px;
+            margin: 0 auto;
+            justify-items: center;
+            margin-top: 120px;
+        }
+
+        .blind-box {
+            width: 100%;
+            aspect-ratio: 1;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            perspective: 1000px;
+            margin: 0 auto;
+            max-width: 110px;
+        }
+
+        .blind-box-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+        }
+
+        .blind-box:hover .blind-box-inner {
+            transform: rotateY(10deg);
+        }
+
+        .blind-box.opened .blind-box-inner {
+            transform: rotateY(180deg);
+        }
+
+        .blind-box-front, .blind-box-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .blind-box-front {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            box-shadow: 
+                0 0 0 2px rgba(255, 255, 255, 0.1),
+                0 5px 15px rgba(0, 0, 0, 0.2),
+                inset 0 0 15px rgba(255, 255, 255, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            box-sizing: border-box;
+        }
+
+        .blind-box-front::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, 
+                transparent 0%,
+                rgba(255, 255, 255, 0.1) 45%,
+                rgba(255, 255, 255, 0.2) 50%,
+                rgba(255, 255, 255, 0.1) 55%,
+                transparent 100%);
+            animation: shine 3s infinite;
+        }
+
+        .blind-box-front::after {
+            content: '?';
+            font-size: 32px;
+            font-weight: bold;
+            color: rgba(255, 255, 255, 0.9);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .blind-box-back {
+            background: linear-gradient(135deg, #87CEEB, #4169E1);
+            transform: rotateY(180deg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            box-sizing: border-box;
+            box-shadow: 
+                0 0 0 2px rgba(255, 255, 255, 0.1),
+                0 5px 15px rgba(0, 0, 0, 0.2),
+                inset 0 0 15px rgba(255, 255, 255, 0.3);
+        }
+
+        .blind-box-back::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, 
+                transparent 0%,
+                rgba(255, 255, 255, 0.2) 45%,
+                rgba(255, 255, 255, 0.3) 50%,
+                rgba(255, 255, 255, 0.2) 55%,
+                transparent 100%);
+            animation: shine 3s infinite;
+        }
+
+        .blind-box-back img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .prize-info {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6));
+            color: white;
+            padding: 3px;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+            border-radius: 0 0 12px 12px;
+            font-size: 0.45em;
+            backdrop-filter: blur(3px);
+            height: 20%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .blind-box.opened .prize-info {
+            transform: translateY(0);
+        }
+
+        .prize-info p {
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.1;
+        }
+
+        .prize-name {
+            font-weight: bold;
+            font-size: 0.55em;
+        }
+
+        .prize-description {
+            font-size: 0.45em;
+            opacity: 0.9;
+            animation: marquee 10s linear infinite;
+            white-space: nowrap;
+            display: inline-block;
+            padding-left: 100%;
+        }
+
+        @keyframes marquee {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(-200%);
+            }
+        }
+
+        .blind-box.opened .prize-description {
+            animation-play-state: running;
+        }
+
+        .blind-box:not(.opened) .prize-description {
+            animation-play-state: paused;
+        }
+
+        @media (max-width: 360px) {
+            .title-container {
+                max-width: 320px;
+            }
+
+            .blind-boxes-grid {
+                max-width: 320px;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .container {
+                max-width: 800px;
+            }
+
+            .title-container {
+                max-width: 700px;
+            }
+
+            .blind-boxes-grid {
+                max-width: 700px;
+            }
+
+            h1 {
+                font-size: 3em;
+            }
+
+            .subtitle {
+                font-size: 1.2em;
+            }
+
+            .blind-box-front::after {
+                font-size: 50px;
+            }
+        }
+
+        .admin-control-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: linear-gradient(135deg, #4ECDC4, #FF6B6B);
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1001;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .admin-panel {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            transform: translateX(120%);
+            transition: transform 0.3s ease;
+        }
+
+        .admin-panel.show {
+            transform: translateX(0);
+        }
+
+        .admin-btn {
+            background: linear-gradient(135deg, #4ECDC4, #FF6B6B);
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .admin-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .admin-btn:active {
+            transform: translateY(0);
+        }
+
+        .admin-panel.hidden {
+            display: none;
+        }
+
+        .blind-box.removed {
+            display: none;
+        }
+
+        .prize-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .prize-modal.active {
+            display: flex;
+        }
+
+        .prize-image-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 3000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .prize-image-modal.active {
+            display: flex;
+        }
+
+        .prize-image-container {
+            position: relative;
+            max-width: 90%;
+            max-height: 90vh;
+        }
+
+        .prize-image-container img {
+            max-width: 100%;
+            max-height: 90vh;
+            object-fit: contain;
+            border-radius: 10px;
+        }
+
+        .close-image-btn {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 30px;
+            cursor: pointer;
+            padding: 5px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .close-image-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: rotate(90deg);
+        }
+
+        .prize-form {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 400px;
+            color: #333;
+        }
+
+        .prize-form h2 {
+            margin: 0 0 20px 0;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        .image-upload {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .image-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 2px dashed #ddd;
+            display: none;
+        }
+
+        .image-preview.active {
+            display: block;
+        }
+
+        .upload-btn {
+            background: #4ECDC4;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            border: none;
+            font-weight: bold;
+        }
+
+        .upload-btn:hover {
+            background: #45b7b0;
+        }
+
+        #imageInput {
+            display: none;
+        }
+
+        .form-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .prize-list {
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .prize-item {
+            background: #f5f5f5;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .prize-item-info {
+            flex: 1;
+        }
+
+        .prize-item-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .edit-btn,
+        .delete-btn {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        .edit-btn {
+            background: #4ECDC4;
+            color: white;
+        }
+
+        .delete-btn {
+            background: #FF6B6B;
+            color: white;
+        }
+
+        .firework {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        .firework-particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            animation: explode 1s ease-out forwards;
+        }
+
+        @keyframes explode {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--tx), var(--ty)) scale(0);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title-container">
+            <h1>盲盒抽奖</h1>
+            <div class="subtitle">快来开启你的幸运盲盒吧！</div>
+        </div>
+        <div class="blind-boxes-grid" id="blindBoxesGrid"></div>
+    </div>
+
+    <button class="admin-control-btn" id="adminControlBtn">管理</button>
+
+    <div class="admin-panel">
+        <button class="admin-btn" id="managePrizes">管理商品</button>
+    </div>
+
+    <div class="prize-modal" id="prizeModal">
+        <div class="prize-form">
+            <h2>商品管理</h2>
+            <div class="form-group">
+                <label for="prizeName">商品名称</label>
+                <input type="text" id="prizeName" required>
+            </div>
+            <div class="form-group">
+                <label>商品图片</label>
+                <div class="image-upload">
+                    <img id="imagePreview" class="image-preview" alt="预览图">
+                    <input type="file" id="imageInput" accept="image/*">
+                    <button class="upload-btn" onclick="document.getElementById('imageInput').click()">选择图片</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="prizeDescription">商品描述</label>
+                <textarea id="prizeDescription" required></textarea>
+            </div>
+            <div class="form-buttons">
+                <button class="admin-btn" id="savePrize">保存</button>
+                <button class="admin-btn" id="cancelPrize">取消</button>
+            </div>
+            <div class="prize-list" id="prizeList"></div>
+        </div>
+    </div>
+
+    <div class="prize-image-modal" id="prizeImageModal">
+        <div class="prize-image-container">
+            <button class="close-image-btn" id="closeImageBtn">×</button>
+            <img id="prizeImage" src="" alt="奖品大图">
+        </div>
+    </div>
+
+    <script>
+        // 奖品列表
+        const prizes = [
+            {
+                name: "神秘奖品1",
+                image: "images/icon1.png",
+                description: "精美的神秘奖品，等待你来开启！"
+            },
+            {
+                name: "神秘奖品2",
+                image: "images/icon2.png",
+                description: "独特的惊喜礼物，期待与你相遇！"
+            },
+            {
+                name: "神秘奖品3",
+                image: "images/icon3.png",
+                description: "特别的幸运礼物，为你带来好运！"
+            },
+            {
+                name: "神秘奖品4",
+                image: "images/icon4.png",
+                description: "精美的神秘奖品，等待你来开启！"
+            },
+            {
+                name: "神秘奖品5",
+                image: "images/icon5.png",
+                description: "独特的惊喜礼物，期待与你相遇！"
+            },
+            {
+                name: "神秘奖品6",
+                image: "images/icon6.png",
+                description: "特别的幸运礼物，为你带来好运！"
+            },
+            {
+                name: "神秘奖品7",
+                image: "images/icon7.png",
+                description: "精美的神秘奖品，等待你来开启！"
+            },
+            {
+                name: "神秘奖品8",
+                image: "images/icon8.png",
+                description: "独特的惊喜礼物，期待与你相遇！"
+            },
+            {
+                name: "神秘奖品9",
+                image: "images/icon9.png",
+                description: "特别的幸运礼物，为你带来好运！"
+            },
+            {
+                name: "神秘奖品10",
+                image: "images/icon10.png",
+                description: "精美的神秘奖品，等待你来开启！"
+            },
+            {
+                name: "神秘奖品11",
+                image: "images/icon11.png",
+                description: "独特的惊喜礼物，期待与你相遇！"
+            },
+            {
+                name: "神秘奖品12",
+                image: "images/icon12.png",
+                description: "特别的幸运礼物，为你带来好运！"
+            }
+        ];
+
+        const blindBoxesGrid = document.getElementById('blindBoxesGrid');
+        const openedBoxes = new Set();
+        const boxes = [];
+        const usedPrizes = new Set(); // 用于记录已使用的奖品
+
+        // 创建盲盒
+        function createBlindBoxes() {
+            // 清空现有的盲盒
+            blindBoxesGrid.innerHTML = '';
+            boxes.length = 0;
+            openedBoxes.clear();
+            usedPrizes.clear(); // 清空已使用的奖品记录
+
+            // 根据商品数量创建盲盒
+            for (let i = 0; i < prizes.length; i++) {
+                const box = document.createElement('div');
+                box.className = 'blind-box';
+                box.innerHTML = `
+                    <div class="blind-box-inner">
+                        <div class="blind-box-front"></div>
+                        <div class="blind-box-back">
+                            <img src="" alt="奖品">
+                            <div class="prize-info">
+                                <p class="prize-name"></p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                box.addEventListener('click', () => {
+                    if (!openedBoxes.has(i)) {
+                        // 获取未使用的奖品列表
+                        const availablePrizes = prizes.filter((_, index) => !usedPrizes.has(index));
+                        
+                        if (availablePrizes.length === 0) {
+                            alert('所有奖品已抽完！');
+                            return;
+                        }
+
+                        // 从可用奖品中随机选择一个
+                        const randomIndex = Math.floor(Math.random() * availablePrizes.length);
+                        const selectedPrize = availablePrizes[randomIndex];
+                        const prizeIndex = prizes.indexOf(selectedPrize);
+                        
+                        const img = box.querySelector('img');
+                        const prizeName = box.querySelector('.prize-name');
+                        
+                        img.src = selectedPrize.image;
+                        prizeName.textContent = selectedPrize.name;
+                        box.classList.add('opened');
+                        openedBoxes.add(i);
+                        usedPrizes.add(prizeIndex);
+
+                        // 添加烟花效果
+                        const rect = box.getBoundingClientRect();
+                        createFireworks(
+                            rect.left + rect.width / 2,
+                            rect.top + rect.height / 2
+                        );
+                    } else {
+                        // 如果盲盒已经打开，点击时显示大图
+                        const img = box.querySelector('img');
+                        prizeImage.src = img.src;
+                        prizeImageModal.classList.add('active');
+                    }
+                });
+                
+                blindBoxesGrid.appendChild(box);
+                boxes.push(box);
+            }
+        }
+
+        // 初始化盲盒
+        createBlindBoxes();
+
+        const adminControlBtn = document.getElementById('adminControlBtn');
+        const adminPanel = document.querySelector('.admin-panel');
+        const managePrizesBtn = document.getElementById('managePrizes');
+
+        // 切换管理面板显示
+        adminControlBtn.addEventListener('click', () => {
+            adminPanel.classList.toggle('show');
+            adminControlBtn.classList.toggle('show');
+        });
+
+        const prizeModal = document.getElementById('prizeModal');
+        const savePrizeBtn = document.getElementById('savePrize');
+        const cancelPrizeBtn = document.getElementById('cancelPrize');
+        const prizeList = document.getElementById('prizeList');
+        let editingIndex = -1;
+
+        // 显示商品管理面板
+        managePrizesBtn.addEventListener('click', () => {
+            prizeModal.classList.add('active');
+            renderPrizeList();
+        });
+
+        // 关闭商品管理面板
+        cancelPrizeBtn.addEventListener('click', () => {
+            prizeModal.classList.remove('active');
+            resetForm();
+        });
+
+        const imageInput = document.getElementById('imageInput');
+        const imagePreview = document.getElementById('imagePreview');
+        let currentImageUrl = '';
+
+        // 处理图片上传
+        imageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // 检查文件类型
+                if (!file.type.startsWith('image/')) {
+                    alert('请选择图片文件');
+                    return;
+                }
+                
+                // 检查文件大小（限制为5MB）
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('图片大小不能超过5MB');
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.classList.add('active');
+                    currentImageUrl = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // 修改保存商品函数
+        savePrizeBtn.addEventListener('click', () => {
+            const name = document.getElementById('prizeName').value;
+            const description = document.getElementById('prizeDescription').value;
+
+            if (!name || !currentImageUrl || !description) {
+                alert('请填写所有字段并上传图片');
+                return;
+            }
+
+            const prize = { name, image: currentImageUrl, description };
+
+            if (editingIndex === -1) {
+                prizes.push(prize);
+            } else {
+                prizes[editingIndex] = prize;
+            }
+
+            renderPrizeList();
+            resetForm();
+            createBlindBoxes();
+        });
+
+        // 修改编辑商品函数
+        window.editPrize = function(index) {
+            const prize = prizes[index];
+            document.getElementById('prizeName').value = prize.name;
+            document.getElementById('prizeDescription').value = prize.description;
+            imagePreview.src = prize.image;
+            imagePreview.classList.add('active');
+            currentImageUrl = prize.image;
+            editingIndex = index;
+        };
+
+        // 修改重置表单函数
+        function resetForm() {
+            document.getElementById('prizeName').value = '';
+            document.getElementById('prizeDescription').value = '';
+            imagePreview.src = '';
+            imagePreview.classList.remove('active');
+            currentImageUrl = '';
+            editingIndex = -1;
+        }
+
+        // 渲染商品列表
+        function renderPrizeList() {
+            prizeList.innerHTML = prizes.map((prize, index) => `
+                <div class="prize-item">
+                    <div class="prize-item-info">
+                        <strong>${prize.name}</strong>
+                        <p>${prize.description}</p>
+                    </div>
+                    <div class="prize-item-actions">
+                        <button class="edit-btn" onclick="editPrize(${index})">编辑</button>
+                        <button class="delete-btn" onclick="deletePrize(${index})">删除</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 删除商品
+        window.deletePrize = function(index) {
+            if (confirm('确定要删除这个商品吗？')) {
+                prizes.splice(index, 1);
+                renderPrizeList();
+                createBlindBoxes(); // 重新创建盲盒
+            }
+        };
+
+        const prizeImageModal = document.getElementById('prizeImageModal');
+        const prizeImage = document.getElementById('prizeImage');
+        const closeImageBtn = document.getElementById('closeImageBtn');
+
+        // 关闭大图
+        closeImageBtn.addEventListener('click', () => {
+            prizeImageModal.classList.remove('active');
+        });
+
+        // 点击大图背景关闭
+        prizeImageModal.addEventListener('click', (e) => {
+            if (e.target === prizeImageModal) {
+                prizeImageModal.classList.remove('active');
+            }
+        });
+
+        // 创建烟花效果
+        function createFirework(x, y) {
+            const firework = document.createElement('div');
+            firework.className = 'firework';
+            
+            const colors = ['#FFD700', '#FF69B4', '#4ECDC4', '#FF6B6B', '#87CEEB', '#FFA500'];
+            const particleCount = 50;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'firework-particle';
+                
+                // 随机角度和距离
+                const angle = (Math.PI * 2 * i) / particleCount;
+                const distance = 100 + Math.random() * 50;
+                
+                // 计算终点位置
+                const tx = Math.cos(angle) * distance;
+                const ty = Math.sin(angle) * distance;
+                
+                particle.style.setProperty('--tx', `${tx}px`);
+                particle.style.setProperty('--ty', `${ty}px`);
+                particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                particle.style.left = `${x}px`;
+                particle.style.top = `${y}px`;
+                
+                firework.appendChild(particle);
+            }
+            
+            document.body.appendChild(firework);
+            
+            // 动画结束后移除烟花元素
+            setTimeout(() => {
+                firework.remove();
+            }, 1000);
+        }
+
+        // 创建多个烟花
+        function createFireworks(x, y) {
+            const fireworkCount = 5;
+            for (let i = 0; i < fireworkCount; i++) {
+                setTimeout(() => {
+                    createFirework(
+                        x + (Math.random() - 0.5) * 100,
+                        y + (Math.random() - 0.5) * 100
+                    );
+                }, i * 200);
+            }
+        }
+    </script>
+</body>
+</html> 
