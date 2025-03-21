@@ -765,96 +765,178 @@
     </div>
 
     <script>
-        // 奖品列表
-        const prizes = [
-            { name: '神秘奖品1', image: 'images/icon1.jpeg', description: '这是一个神秘的奖品' },
-            { name: '神秘奖品2', image: 'images/icon2.jpeg', description: '这是一个神秘的奖品' },
-            { name: '神秘奖品3', image: 'images/icon3.jpeg', description: '这是一个神秘的奖品' },
-            { name: '神秘奖品4', image: 'images/icon4.jpeg', description: '这是一个神秘的奖品' },
-            { name: '神秘奖品5', image: 'images/icon5.jpeg', description: '这是一个神秘的奖品' },
-            { name: '神秘奖品6', image: 'images/icon6.jpeg', description: '这是一个神秘的奖品' },
-            { name: '神秘奖品7', image: 'images/icon7.jpeg', description: '这是一个神秘的奖品' },
-            { name: '神秘奖品8', image: 'images/icon8.jpeg', description: '这是一个神秘的奖品' },
-            { name: '神秘奖品9', image: 'images/icon9.jpeg', description: '这是一个神秘的奖品' },
-            { name: '神秘奖品10', image: 'images/icon10.jpeg', description: '这是一个神秘的奖品' },
-            { name: '神秘奖品11', image: 'images/icon11.jpeg', description: '这是一个神秘的奖品' },
-            { name: '神秘奖品12', image: 'images/icon12.jpeg', description: '这是一个神秘的奖品' }
+        // 初始化奖品列表
+        let prizes = [
+            { name: "神秘奖品1", image: "images/icon1.jpeg", description: "恭喜你获得这个神秘奖品！" },
+            { name: "神秘奖品2", image: "images/icon2.jpeg", description: "这是一个特别的礼物！" },
+            { name: "神秘奖品3", image: "images/icon3.jpeg", description: "惊喜等着你！" },
+            { name: "神秘奖品4", image: "images/icon4.jpeg", description: "恭喜你获得这个神秘奖品！" },
+            { name: "神秘奖品5", image: "images/icon5.jpeg", description: "这是一个特别的礼物！" },
+            { name: "神秘奖品6", image: "images/icon6.jpeg", description: "惊喜等着你！" },
+            { name: "神秘奖品7", image: "images/icon7.jpeg", description: "恭喜你获得这个神秘奖品！" },
+            { name: "神秘奖品8", image: "images/icon8.jpeg", description: "这是一个特别的礼物！" },
+            { name: "神秘奖品9", image: "images/icon9.jpeg", description: "惊喜等着你！" },
+            { name: "神秘奖品10", image: "images/icon10.jpeg", description: "恭喜你获得这个神秘奖品！" },
+            { name: "神秘奖品11", image: "images/icon11.jpeg", description: "这是一个特别的礼物！" },
+            { name: "神秘奖品12", image: "images/icon12.jpeg", description: "惊喜等着你！" }
         ];
 
-        const blindBoxesGrid = document.getElementById('blindBoxesGrid');
-        const openedBoxes = new Set();
-        const boxes = [];
-        const usedPrizes = new Set(); // 用于记录已使用的奖品
+        // 存储已抽取的奖品
+        let claimedPrizes = [];
 
-        // 创建盲盒
-        function createBlindBoxes() {
-            // 清空现有的盲盒
-            blindBoxesGrid.innerHTML = '';
-            boxes.length = 0;
-            openedBoxes.clear();
-            usedPrizes.clear(); // 清空已使用的奖品记录
+        // 从localStorage加载中奖记录
+        function loadPrizeRecords() {
+            try {
+                const savedData = localStorage.getItem('prizeRecords');
+                if (savedData) {
+                    const data = JSON.parse(savedData);
+                    prizes = data.prizes;
+                    return data;
+                }
+                return { prizes: prizes, last_update: "" };
+            } catch (error) {
+                console.error('加载中奖记录失败:', error);
+                return { prizes: prizes, last_update: "" };
+            }
+        }
 
-            // 根据商品数量创建盲盒
-            for (let i = 0; i < prizes.length; i++) {
-                const box = document.createElement('div');
-                box.className = 'blind-box';
-                box.innerHTML = `
-                    <div class="blind-box-inner">
-                        <div class="blind-box-front"></div>
-                        <div class="blind-box-back">
-                            <img src="" alt="奖品">
-                            <div class="prize-info">
-                                <p class="prize-name"></p>
-                            </div>
-                        </div>
-                    </div>
-                `;
+        // 更新中奖记录到localStorage
+        function updatePrizeRecords(prize) {
+            try {
+                const savedData = localStorage.getItem('prizeRecords');
+                const data = savedData ? JSON.parse(savedData) : { prizes: prizes, last_update: "" };
                 
-                box.addEventListener('click', () => {
-                    if (!openedBoxes.has(i)) {
-                        // 获取未使用的奖品列表
-                        const availablePrizes = prizes.filter((_, index) => !usedPrizes.has(index));
-                        
-                        if (availablePrizes.length === 0) {
-                            alert('所有奖品已抽完！');
-                            return;
-                        }
+                // 更新对应奖品的状态
+                const prizeIndex = data.prizes.findIndex(p => p.name === prize.name);
+                if (prizeIndex !== -1) {
+                    data.prizes[prizeIndex].isClaimed = true;
+                    data.prizes[prizeIndex].claimed_at = new Date().toISOString();
+                }
 
-                        // 从可用奖品中随机选择一个
-                        const randomIndex = Math.floor(Math.random() * availablePrizes.length);
-                        const selectedPrize = availablePrizes[randomIndex];
-                        const prizeIndex = prizes.indexOf(selectedPrize);
-                        
-                        const img = box.querySelector('img');
-                        const prizeName = box.querySelector('.prize-name');
-                        
-                        img.src = selectedPrize.image;
-                        prizeName.textContent = selectedPrize.name;
-                        box.classList.add('opened');
-                        openedBoxes.add(i);
-                        usedPrizes.add(prizeIndex);
+                // 更新最后更新时间
+                data.last_update = new Date().toISOString();
 
-                        // 添加烟花效果
-                        const rect = box.getBoundingClientRect();
-                        createFireworks(
-                            rect.left + rect.width / 2,
-                            rect.top + rect.height / 2
-                        );
-                    } else {
-                        // 如果盲盒已经打开，点击时显示大图
-                        const img = box.querySelector('img');
-                        prizeImage.src = img.src;
-                        prizeImageModal.classList.add('active');
-                    }
-                });
-                
-                blindBoxesGrid.appendChild(box);
-                boxes.push(box);
+                // 保存到localStorage
+                localStorage.setItem('prizeRecords', JSON.stringify(data));
+
+                // 更新本地prizes数组中的状态
+                const localPrizeIndex = prizes.findIndex(p => p.name === prize.name);
+                if (localPrizeIndex !== -1) {
+                    prizes[localPrizeIndex].isClaimed = true;
+                    prizes[localPrizeIndex].claimed_at = new Date().toISOString();
+                }
+
+                console.log('中奖记录已更新:', data);
+            } catch (error) {
+                console.error('更新中奖记录失败:', error);
             }
         }
 
         // 初始化盲盒
-        createBlindBoxes();
+        function initializeBlindBoxes() {
+            const grid = document.getElementById('blindBoxesGrid');
+            grid.innerHTML = '';
+            
+            // 加载中奖记录
+            loadPrizeRecords();
+
+            // 创建盲盒
+            for (let i = 0; i < 12; i++) {
+                const box = document.createElement('div');
+                box.className = 'blind-box';
+                
+                // 检查这个位置是否已经中奖
+                const prize = prizes[i];
+                if (prize && prize.isClaimed) {
+                    box.classList.add('opened');
+                    box.innerHTML = `
+                        <div class="blind-box-inner">
+                            <div class="blind-box-front"></div>
+                            <div class="blind-box-back">
+                                <img src="${prize.image}" alt="${prize.name}">
+                                <div class="prize-info">
+                                    <p class="prize-name">${prize.name}</p>
+                                    <p class="prize-description">${prize.description}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    // 添加点击事件显示大图
+                    box.addEventListener('click', () => showPrizeImage(prize));
+                } else {
+                    box.innerHTML = `
+                        <div class="blind-box-inner">
+                            <div class="blind-box-front"></div>
+                            <div class="blind-box-back"></div>
+                        </div>
+                    `;
+                    box.addEventListener('click', () => openBlindBox(i));
+                }
+                
+                grid.appendChild(box);
+            }
+        }
+
+        // 显示奖品大图
+        function showPrizeImage(prize) {
+            const prizeImage = document.getElementById('prizeImage');
+            const prizeImageModal = document.getElementById('prizeImageModal');
+            prizeImage.src = prize.image;
+            prizeImageModal.classList.add('active');
+        }
+
+        // 打开盲盒
+        function openBlindBox(index) {
+            const box = document.querySelectorAll('.blind-box')[index];
+            if (box.classList.contains('opened')) {
+                // 如果已经打开，显示大图
+                const prize = prizes[index];
+                if (prize && prize.isClaimed) {
+                    showPrizeImage(prize);
+                }
+                return;
+            }
+
+            // 获取未中奖的奖品列表
+            const availablePrizes = prizes.filter(p => !p.isClaimed);
+
+            if (availablePrizes.length === 0) {
+                alert('所有奖品已被抽完！');
+                return;
+            }
+
+            // 随机选择一个未中奖的奖品
+            const randomIndex = Math.floor(Math.random() * availablePrizes.length);
+            const selectedPrize = availablePrizes[randomIndex];
+
+            // 更新中奖记录
+            updatePrizeRecords(selectedPrize);
+
+            // 显示奖品
+            box.classList.add('opened');
+            box.innerHTML = `
+                <div class="blind-box-inner">
+                    <div class="blind-box-front"></div>
+                    <div class="blind-box-back">
+                        <img src="${selectedPrize.image}" alt="${selectedPrize.name}">
+                        <div class="prize-info">
+                            <p class="prize-name">${selectedPrize.name}</p>
+                            <p class="prize-description">${selectedPrize.description}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // 添加点击事件显示大图
+            box.addEventListener('click', () => showPrizeImage(selectedPrize));
+
+            // 创建烟花和撒花效果
+            const rect = box.getBoundingClientRect();
+            createFireworks(rect.left + rect.width / 2, rect.top + rect.height / 2);
+        }
+
+        // 页面加载时初始化盲盒
+        document.addEventListener('DOMContentLoaded', initializeBlindBoxes);
 
         const adminControlBtn = document.getElementById('adminControlBtn');
         const adminPanel = document.querySelector('.admin-panel');
@@ -934,7 +1016,7 @@
 
             renderPrizeList();
             resetForm();
-            createBlindBoxes();
+            initializeBlindBoxes();
         });
 
         // 修改编辑商品函数
@@ -979,7 +1061,7 @@
             if (confirm('确定要删除这个商品吗？')) {
                 prizes.splice(index, 1);
                 renderPrizeList();
-                createBlindBoxes(); // 重新创建盲盒
+                initializeBlindBoxes(); // 重新创建盲盒
             }
         };
 
