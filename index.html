@@ -277,7 +277,7 @@
                 transform: translateX(0);
             }
             100% {
-                transform: translateX(calc(380px - 30px));
+                transform: translateX(calc(100% - 30px));
             }
         }
 
@@ -932,9 +932,112 @@
                 opacity: 0;
             }
         }
+
+        /* 音乐播放器样式 */
+        .music-player {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            padding: 8px;
+            border-radius: 25px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .music-control {
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 50%;
+            background: #fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23333"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>') center/24px no-repeat;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .music-control.paused {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23333"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>');
+        }
+
+        .music-control:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .music-select {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            padding: 8px;
+            border-radius: 20px;
+            color: #4B0082;
+            font-size: 14px;
+            cursor: pointer;
+            outline: none;
+            max-width: 150px;
+        }
+
+        .volume-control {
+            width: 80px;
+            height: 4px;
+            -webkit-appearance: none;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+            outline: none;
+        }
+
+        .volume-control::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            background: #FFE53B;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .volume-control::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        @media (max-width: 480px) {
+            .music-player {
+                top: 10px;
+                right: 10px;
+                padding: 6px;
+            }
+
+            .music-control {
+                width: 32px;
+                height: 32px;
+            }
+
+            .music-select {
+                max-width: 120px;
+                font-size: 12px;
+                padding: 6px;
+            }
+
+            .volume-control {
+                width: 60px;
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- 添加音乐播放器 -->
+    <div class="music-player">
+        <button class="music-control" id="musicControl"></button>
+    </div>
+
+    <audio id="bgMusic" preload="auto" loop>
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3" type="audio/mpeg">
+    </audio>
+
     <div class="container">
         <div class="title-container">
             <h1 class="title">盲盒抽奖</h1>
@@ -1087,6 +1190,7 @@
             for (let i = 0; i < 12; i++) {
                 const box = document.createElement('div');
                 box.className = 'blind-box';
+                box.dataset.index = i;
                 
                 // 检查这个位置是否已经中奖
                 const prize = prizes[i];
@@ -1096,7 +1200,7 @@
                         <div class="blind-box-inner">
                             <div class="blind-box-front"></div>
                             <div class="blind-box-back">
-                                <img src="${prize.image}" alt="${prize.name}">
+                                <img src="${prize.image}" alt="${prize.name}" style="pointer-events: none;">
                                 <div class="prize-info">
                                     <p class="prize-name">${prize.name}</p>
                                     <p class="prize-description">${prize.description}</p>
@@ -1113,6 +1217,7 @@
                             <div class="blind-box-back"></div>
                         </div>
                     `;
+                    // 使用箭头函数来保持正确的this上下文
                     box.addEventListener('click', () => openBlindBox(i));
                 }
                 
@@ -1130,13 +1235,8 @@
 
         // 打开盲盒
         function openBlindBox(index) {
-            const box = document.querySelectorAll('.blind-box')[index];
-            if (box.classList.contains('opened')) {
-                // 如果已经打开，显示大图
-                const prize = prizes[index];
-                if (prize && prize.isClaimed) {
-                    showPrizeImage(prize);
-                }
+            const box = document.querySelectorAll('.blind-box')[parseInt(index)];
+            if (!box || box.classList.contains('opened') || box.classList.contains('flipping')) {
                 return;
             }
 
@@ -1167,7 +1267,7 @@
                     <div class="blind-box-inner">
                         <div class="blind-box-front"></div>
                         <div class="blind-box-back">
-                            <img src="${selectedPrize.image}" alt="${selectedPrize.name}">
+                            <img src="${selectedPrize.image}" alt="${selectedPrize.name}" style="pointer-events: none;">
                             <div class="prize-info">
                                 <p class="prize-name">${selectedPrize.name}</p>
                                 <p class="prize-description">${selectedPrize.description}</p>
@@ -1185,35 +1285,30 @@
                 // 创建烟花和撒花效果
                 const rect = box.getBoundingClientRect();
                 createFireworks(rect.left + rect.width / 2, rect.top + rect.height / 2);
-            }, 400); // 动画进行到一半时更新内容
+                
+                // 播放烟花音效
+                playFireworkSound();
+            }, 400);
         }
-
-        // 页面加载时初始化盲盒
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeBlindBoxes();
-            initializePacmanAnimation();
-        });
 
         function initializePacmanAnimation() {
             const pacman = document.querySelector('.pacman');
             const dots = document.querySelectorAll('.dot');
-            const pacmanWidth = 30;
-            const containerWidth = 380;
+            const containerWidth = document.querySelector('.pacman-line').offsetWidth - 30; // 减去吃豆人的宽度
             const animationDuration = 8000; // 8秒
-            
-            // 计算每个豆子的位置
-            const dotPositions = Array.from(dots).map(dot => {
-                const rect = dot.getBoundingClientRect();
-                return rect.left;
-            });
 
+            // 重置所有豆子的状态
+            dots.forEach(dot => dot.classList.remove('eaten'));
+            
             // 动画开始时间
             let startTime = null;
+            let animationFrameId = null;
 
             function animate(currentTime) {
                 if (!startTime) startTime = currentTime;
                 const elapsed = currentTime - startTime;
 
+                // 重置动画
                 if (elapsed >= animationDuration) {
                     startTime = currentTime;
                     dots.forEach(dot => dot.classList.remove('eaten'));
@@ -1221,7 +1316,10 @@
 
                 // 计算吃豆人当前位置
                 const progress = (elapsed % animationDuration) / animationDuration;
-                const pacmanPosition = progress * (containerWidth - pacmanWidth);
+                const pacmanPosition = progress * containerWidth;
+
+                // 设置吃豆人位置
+                pacman.style.transform = `translateX(${pacmanPosition}px)`;
 
                 // 获取吃豆人的实际位置
                 const pacmanRect = pacman.getBoundingClientRect();
@@ -1230,15 +1328,32 @@
                 // 检查每个豆子是否被吃掉
                 dots.forEach((dot, index) => {
                     const dotRect = dot.getBoundingClientRect();
-                    if (pacmanCenter > dotRect.left) {
+                    if (pacmanCenter >= dotRect.left) {
                         dot.classList.add('eaten');
                     }
                 });
 
-                requestAnimationFrame(animate);
+                // 继续动画
+                animationFrameId = requestAnimationFrame(animate);
             }
 
-            requestAnimationFrame(animate);
+            // 开始动画
+            animationFrameId = requestAnimationFrame(animate);
+
+            // 当页面不可见时暂停动画
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    if (animationFrameId) {
+                        cancelAnimationFrame(animationFrameId);
+                        animationFrameId = null;
+                    }
+                } else {
+                    if (!animationFrameId) {
+                        startTime = null;
+                        animationFrameId = requestAnimationFrame(animate);
+                    }
+                }
+            });
         }
 
         const adminControlBtn = document.getElementById('adminControlBtn');
@@ -1519,6 +1634,108 @@
 
             // 显示成功提示
             alert('所有奖品状态已重置！');
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // 先初始化界面
+            initializeBlindBoxes();
+            initializePacmanAnimation();
+            
+            const bgMusic = document.getElementById('bgMusic');
+            const musicControl = document.getElementById('musicControl');
+
+            // 设置音量
+            bgMusic.volume = 0.3;
+
+            // 音乐播放状态管理
+            let isPlaying = false;
+
+            // 尝试自动播放音乐的函数
+            const playMusic = async () => {
+                try {
+                    await bgMusic.play();
+                    isPlaying = true;
+                    musicControl.classList.remove('paused');
+                } catch (error) {
+                    console.log('自动播放被阻止:', error);
+                    isPlaying = false;
+                    musicControl.classList.add('paused');
+                }
+            };
+
+            // 点击音乐控制按钮
+            musicControl.addEventListener('click', async () => {
+                if (bgMusic.paused) {
+                    playMusic();
+                } else {
+                    bgMusic.pause();
+                    isPlaying = false;
+                    musicControl.classList.add('paused');
+                }
+            });
+
+            // 监听音乐播放状态
+            bgMusic.addEventListener('playing', () => {
+                isPlaying = true;
+                musicControl.classList.remove('paused');
+            });
+
+            bgMusic.addEventListener('pause', () => {
+                isPlaying = false;
+                musicControl.classList.add('paused');
+            });
+
+            // 监听音乐加载错误事件
+            bgMusic.addEventListener('error', (e) => {
+                console.error('音乐加载失败:', e);
+                bgMusic.src = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
+                bgMusic.load();
+                playMusic();
+            });
+
+            // 监听音乐加载完成事件
+            bgMusic.addEventListener('canplaythrough', () => {
+                playMusic();
+            });
+
+            // 监听用户交互事件来触发音乐播放
+            const startPlayback = () => {
+                playMusic();
+                // 移除事件监听器
+                document.removeEventListener('click', startPlayback);
+                document.removeEventListener('touchstart', startPlayback);
+                document.removeEventListener('keydown', startPlayback);
+            };
+
+            // 添加用户交互事件监听器
+            document.addEventListener('click', startPlayback);
+            document.addEventListener('touchstart', startPlayback);
+            document.addEventListener('keydown', startPlayback);
+
+            // 尝试立即播放
+            playMusic();
+        });
+
+        // 创建一个专门的音效播放函数
+        function playFireworkSound() {
+            try {
+                // 创建一个新的音频实例
+                const audio = new Audio();
+                audio.src = 'https://assets.mixkit.co/active_storage/sfx/2870/2870-preview.mp3';
+                audio.volume = 1.0;
+                
+                // 播放完成后自动清理
+                audio.addEventListener('ended', () => {
+                    audio.remove();
+                });
+
+                // 播放音效
+                audio.play().catch(error => {
+                    console.log('播放烟花音效失败:', error);
+                });
+            } catch (error) {
+                console.log('创建音效实例失败:', error);
+            }
         }
     </script>
 </body>
