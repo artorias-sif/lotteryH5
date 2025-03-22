@@ -170,116 +170,51 @@
         }
 
         .blind-box {
-            width: 100%;
-            aspect-ratio: 1;
+            width: 150px;
+            height: 150px;
+            margin: 10px;
             cursor: pointer;
-            transition: all 0.3s ease;
             position: relative;
             perspective: 1000px;
-            margin: 0 auto;
-            max-width: 110px;
-        }
-
-        .blind-box-inner {
-            position: relative;
-            width: 100%;
-            height: 100%;
             transform-style: preserve-3d;
             transition: transform 0.6s;
         }
 
-        .blind-box:hover .blind-box-inner {
-            transform: rotateY(10deg);
-        }
-
-        .blind-box.opened .blind-box-inner {
+        .blind-box.flipped {
             transform: rotateY(180deg);
         }
 
-        .blind-box-front, .blind-box-back {
+        .blind-box-front,
+        .blind-box-back {
             position: absolute;
             width: 100%;
             height: 100%;
             backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             border-radius: 15px;
-            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
         .blind-box-front {
             background: linear-gradient(135deg, #FFD700, #FFA500);
-            box-shadow: 
-                0 0 0 2px rgba(255, 255, 255, 0.1),
-                0 5px 15px rgba(0, 0, 0, 0.2),
-                inset 0 0 15px rgba(255, 255, 255, 0.3);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 15px;
-            box-sizing: border-box;
-        }
-
-        .blind-box-front::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(45deg, 
-                transparent 0%,
-                rgba(255, 255, 255, 0.1) 45%,
-                rgba(255, 255, 255, 0.2) 50%,
-                rgba(255, 255, 255, 0.1) 55%,
-                transparent 100%);
-            animation: shine 3s infinite;
-        }
-
-        .blind-box-front::after {
-            content: '?';
-            font-size: 32px;
+            transform: rotateY(0deg);
+            font-size: 24px;
+            color: white;
             font-weight: bold;
-            color: rgba(255, 255, 255, 0.9);
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .blind-box-back {
-            background: linear-gradient(135deg, #87CEEB, #4169E1);
+            background: white;
             transform: rotateY(180deg);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
             padding: 10px;
-            box-sizing: border-box;
-            box-shadow: 
-                0 0 0 2px rgba(255, 255, 255, 0.1),
-                0 5px 15px rgba(0, 0, 0, 0.2),
-                inset 0 0 15px rgba(255, 255, 255, 0.3);
         }
 
-        .blind-box-back::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(45deg, 
-                transparent 0%,
-                rgba(255, 255, 255, 0.2) 45%,
-                rgba(255, 255, 255, 0.3) 50%,
-                rgba(255, 255, 255, 0.2) 55%,
-                transparent 100%);
-            animation: shine 3s infinite;
-        }
-
-        .blind-box-back img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        .blind-box img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
         }
 
         .prize-info {
@@ -859,105 +794,69 @@
 
         // 初始化盲盒
         function initializeBlindBoxes() {
-            const grid = document.getElementById('blindBoxesGrid');
-            grid.innerHTML = '';
-            
-            // 加载中奖记录
-            loadPrizeRecords();
+            const container = document.querySelector('.blind-boxes-container');
+            container.innerHTML = '';
 
-            // 创建盲盒
-            for (let i = 0; i < 12; i++) {
-                const box = document.createElement('div');
-                box.className = 'blind-box';
+            prizes.forEach((prize, index) => {
+                const blindBox = document.createElement('div');
+                blindBox.className = 'blind-box';
                 
-                // 检查这个位置是否已经中奖
-                const prize = prizes[i];
-                if (prize && prize.isClaimed) {
-                    box.classList.add('opened');
-                    box.innerHTML = `
-                        <div class="blind-box-inner">
-                            <div class="blind-box-front"></div>
-                            <div class="blind-box-back">
-                                <img src="${prize.image}" alt="${prize.name}">
-                                <div class="prize-info">
-                                    <p class="prize-name">${prize.name}</p>
-                                    <p class="prize-description">${prize.description}</p>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    // 添加点击事件显示大图
-                    box.addEventListener('click', () => showPrizeImage(prize));
-                } else {
-                    box.innerHTML = `
-                        <div class="blind-box-inner">
-                            <div class="blind-box-front"></div>
-                            <div class="blind-box-back"></div>
-                        </div>
-                    `;
-                    box.addEventListener('click', () => openBlindBox(i));
+                // 创建正面
+                const front = document.createElement('div');
+                front.className = 'blind-box-front';
+                front.textContent = '?';
+
+                // 创建背面
+                const back = document.createElement('div');
+                back.className = 'blind-box-back';
+
+                // 如果已经抽中，显示奖品
+                if (prize.isClaimed) {
+                    const img = document.createElement('img');
+                    img.src = prize.image;
+                    img.alt = prize.name;
+                    back.appendChild(img);
+                    blindBox.classList.add('flipped');
                 }
-                
-                grid.appendChild(box);
-            }
-        }
 
-        // 显示奖品大图
-        function showPrizeImage(prize) {
-            const prizeImage = document.getElementById('prizeImage');
-            const prizeImageModal = document.getElementById('prizeImageModal');
-            prizeImage.src = prize.image;
-            prizeImageModal.classList.add('active');
+                blindBox.appendChild(front);
+                blindBox.appendChild(back);
+                
+                blindBox.addEventListener('click', () => openBlindBox(index, blindBox, back));
+                container.appendChild(blindBox);
+            });
         }
 
         // 打开盲盒
-        function openBlindBox(index) {
-            const box = document.querySelectorAll('.blind-box')[index];
-            if (box.classList.contains('opened')) {
-                // 如果已经打开，显示大图
-                const prize = prizes[index];
-                if (prize && prize.isClaimed) {
-                    showPrizeImage(prize);
-                }
+        async function openBlindBox(index, blindBox, backElement) {
+            const prize = prizes[index];
+            
+            // 如果已经抽中，显示大图
+            if (prize.isClaimed) {
+                showPrizeImage(prize);
                 return;
             }
 
-            // 获取未中奖的奖品列表
-            const availablePrizes = prizes.filter(p => !p.isClaimed);
+            // 添加翻转效果
+            blindBox.classList.add('flipped');
 
-            if (availablePrizes.length === 0) {
-                alert('所有奖品已被抽完！');
-                return;
-            }
+            // 等待翻转动画完成后再显示奖品
+            setTimeout(() => {
+                const img = document.createElement('img');
+                img.src = prize.image;
+                img.alt = prize.name;
+                backElement.appendChild(img);
 
-            // 随机选择一个未中奖的奖品
-            const randomIndex = Math.floor(Math.random() * availablePrizes.length);
-            const selectedPrize = availablePrizes[randomIndex];
+                // 更新奖品状态
+                prize.isClaimed = true;
+                prize.claimed_at = new Date().toISOString();
+                
+                // 保存抽奖记录
+                updatePrizeRecords(prize);
 
-            // 更新中奖记录
-            updatePrizeRecords(selectedPrize);
-
-            // 显示奖品
-            box.classList.add('opened');
-            box.innerHTML = `
-                <div class="blind-box-inner">
-                    <div class="blind-box-front"></div>
-                    <div class="blind-box-back">
-                        <img src="${selectedPrize.image}" alt="${selectedPrize.name}">
-                        <div class="prize-info">
-                            <p class="prize-name">${selectedPrize.name}</p>
-                            <p class="prize-description">${selectedPrize.description}</p>
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            // 添加点击事件显示大图
-            box.addEventListener('click', () => showPrizeImage(selectedPrize));
-
-            // 创建烟花和撒花效果
-            const rect = box.getBoundingClientRect();
-            createFireworks(rect.left + rect.width / 2, rect.top + rect.height / 2);
+                // 显示中奖提示
+                showWinningMessage(prize.name);
+            }, 300);
         }
 
         // 页面加载时初始化盲盒
