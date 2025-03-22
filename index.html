@@ -791,6 +791,7 @@
 
     <div class="admin-panel">
         <button class="admin-btn" id="managePrizes">管理商品</button>
+        <button class="reset-btn" onclick="resetAllPrizes()">重置所有奖品</button>
     </div>
 
     <div class="prize-modal" id="prizeModal">
@@ -1016,38 +1017,12 @@
         const adminPanel = document.querySelector('.admin-panel');
         const managePrizesBtn = document.getElementById('managePrizes');
 
-        // 切换管理面板显示
-        function toggleAdminPanel() {
-            const adminPanel = document.querySelector('.admin-panel');
-            adminPanel.classList.toggle('show');
-        }
-
-        // 初始化管理面板
-        function initializeAdminPanel() {
-            const adminPanel = document.querySelector('.admin-panel');
-            adminPanel.innerHTML = `
-                <button class="admin-btn" id="managePrizes">管理商品</button>
-                <button onclick="toggleAdminPanel()">关闭管理面板</button>
-                <button onclick="resetAllPrizes()" class="reset-btn">重置所有奖品</button>
-            `;
-
-            // 重新绑定管理商品按钮的事件
-            document.getElementById('managePrizes').addEventListener('click', () => {
-                prizeModal.classList.add('active');
-                renderPrizeList();
-            });
-        }
-
-        // 页面加载完成后初始化
-        document.addEventListener('DOMContentLoaded', () => {
-            initializeBlindBoxes();
-            initializeAdminPanel();
-        });
-
         // 点击管理按钮显示面板
         adminControlBtn.addEventListener('click', () => {
             const adminPanel = document.querySelector('.admin-panel');
-            adminPanel.classList.add('show');
+            adminPanel.classList.toggle('show');
+            // 更新按钮文本
+            adminControlBtn.textContent = adminPanel.classList.contains('show') ? '关闭' : '管理';
         });
 
         const prizeModal = document.getElementById('prizeModal');
