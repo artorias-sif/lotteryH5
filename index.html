@@ -50,27 +50,6 @@
             transform: translateX(-50%);
         }
 
-        .title-container::before,
-        .title-container::after {
-            content: '🎁';
-            position: absolute;
-            font-size: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            animation: bounce 2s infinite;
-            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
-        }
-
-        .title-container::before {
-            left: -25px;
-            animation-delay: 0s;
-        }
-
-        .title-container::after {
-            right: -25px;
-            animation-delay: 0.5s;
-        }
-
         h1 {
             font-size: 1.8em;
             margin: 0;
@@ -88,21 +67,28 @@
             letter-spacing: 1px;
         }
 
-        h1::before {
-            content: '';
+        h1::before, h1::after {
+            content: '🎁';
             position: absolute;
-            top: -10px;
-            left: -20px;
-            right: -20px;
-            bottom: -10px;
-            background: linear-gradient(45deg, 
-                rgba(255, 215, 0, 0.15),
-                rgba(255, 165, 0, 0.15),
-                rgba(255, 105, 180, 0.15),
-                rgba(255, 215, 0, 0.15));
-            border-radius: 15px;
-            z-index: -1;
-            animation: glow 2s ease-in-out infinite;
+            font-size: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            animation: bounce 2s infinite;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+            color: initial;
+            background: none;
+            -webkit-background-clip: initial;
+            -webkit-text-fill-color: initial;
+        }
+
+        h1::before {
+            right: calc(100% + 10px);
+            animation-delay: 0s;
+        }
+
+        h1::after {
+            left: calc(100% + 10px);
+            animation-delay: 0.5s;
         }
 
         @keyframes bounce {
@@ -123,17 +109,6 @@
             }
             100% {
                 background-position: 0% 50%;
-            }
-        }
-
-        @keyframes glow {
-            0%, 100% {
-                opacity: 0.5;
-                transform: scale(1);
-            }
-            50% {
-                opacity: 0.8;
-                transform: scale(1.05);
             }
         }
 
@@ -394,6 +369,26 @@
 
             .blind-box-front::after {
                 font-size: 50px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .title-container {
+                padding: 8px 30px;
+            }
+
+            h1::before {
+                right: calc(100% + 5px);
+                font-size: 16px;
+            }
+
+            h1::after {
+                left: calc(100% + 5px);
+                font-size: 16px;
+            }
+
+            h1 {
+                font-size: 1.5em;
             }
         }
 
