@@ -12,11 +12,17 @@
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
-            background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
-            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #8A2BE2, #4B0082);
+            font-family: "Comic Sans MS", "Comic Sans", "华文圆体", "幼圆", "微软雅黑", sans-serif;
             color: #fff;
             overflow-x: hidden;
             -webkit-tap-highlight-color: transparent;
+        }
+
+        @font-face {
+            font-family: 'HappyFont';
+            src: local('FZMiaoWu-GBK'), local('HappyZcool'), local('站酷快乐体');
+            font-display: swap;
         }
 
         .container {
@@ -51,29 +57,47 @@
         }
 
         h1 {
-            font-size: 1.8em;
+            font-size: 2em;
             margin: 0;
-            background: linear-gradient(45deg, 
-                #FFD700, #FFA500, #FF69B4, #FFD700);
+            background: linear-gradient(
+                45deg,
+                #FFE53B,
+                #FF2525,
+                #FFE53B,
+                #FF2525,
+                #FFE53B
+            );
             background-size: 300% auto;
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-            animation: shine 3s linear infinite;
+            text-shadow: 4px 4px 0px rgba(0, 0, 0, 0.2);
             position: relative;
             display: inline-block;
             font-weight: bold;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
+            animation: shine 3s linear infinite, bounce-text 2s ease-in-out infinite;
+            font-family: 'HappyFont', "华文圆体", "幼圆", "Comic Sans MS", cursive;
+            transform: rotate(-5deg);
+            -webkit-text-stroke: 1px rgba(255, 255, 255, 0.3);
+        }
+
+        @keyframes bounce-text {
+            0%, 100% {
+                transform: rotate(-5deg) translateY(0);
+            }
+            50% {
+                transform: rotate(-5deg) translateY(-10px);
+            }
         }
 
         h1::before, h1::after {
             content: '🎁';
             position: absolute;
-            font-size: 24px;
+            font-size: 32px;
             top: 50%;
             transform: translateY(-50%);
-            animation: bounce 2s infinite;
+            animation: bounce-gift 1.5s ease-in-out infinite;
             filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
             color: initial;
             background: none;
@@ -82,44 +106,56 @@
             pointer-events: none;
         }
 
+        @keyframes bounce-gift {
+            0%, 100% {
+                transform: translateY(-50%) rotate(0deg) scale(1);
+            }
+            50% {
+                transform: translateY(-50%) rotate(15deg) scale(1.2);
+            }
+        }
+
         h1::before {
-            right: calc(100% + 15px);
+            right: calc(100% + 20px);
             animation-delay: 0s;
         }
 
         h1::after {
-            left: calc(100% + 15px);
-            animation-delay: 0.5s;
+            left: calc(100% + 20px);
+            animation-delay: 0.75s;
         }
 
-        @keyframes bounce {
-            0%, 100% {
-                transform: translateY(-50%) scale(1);
+        @media (min-width: 768px) {
+            h1 {
+                font-size: 3.5em;
             }
-            50% {
-                transform: translateY(-50%) scale(1.2);
+
+            h1::before, h1::after {
+                font-size: 48px;
             }
         }
 
-        @keyframes shine {
-            0% {
-                background-position: 0% 50%;
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.8em;
             }
-            50% {
-                background-position: 100% 50%;
-            }
-            100% {
-                background-position: 0% 50%;
+
+            h1::before, h1::after {
+                font-size: 24px;
             }
         }
 
         .subtitle {
             font-size: 0.9em;
-            color: rgba(255, 255, 255, 0.9);
-            margin-top: 6px;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+            color: rgba(255, 255, 255, 0.95);
+            margin-top: 12px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
             animation: fadeIn 1s ease-out;
             font-weight: 500;
+            font-family: 'HappyFont', "华文圆体", "幼圆", "Comic Sans MS", cursive;
+            transform: rotate(-2deg);
+            letter-spacing: 1px;
+            margin-bottom: 30px;
         }
 
         @keyframes fadeIn {
@@ -130,6 +166,152 @@
             to {
                 opacity: 1;
                 transform: translateY(0);
+            }
+        }
+
+        .pacman-line {
+            position: relative;
+            width: 100%;
+            max-width: 380px;
+            height: 40px;
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            overflow: visible;
+        }
+
+        .pacman {
+            width: 30px;
+            height: 30px;
+            position: relative;
+            animation: move-pacman 8s linear infinite;
+            margin-left: 0;
+            transform-origin: center;
+        }
+
+        .pacman::before {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 0;
+            border: 15px solid #FFE53B;
+            border-radius: 15px;
+            border-right: 15px solid transparent;
+            animation: eat-top 0.3s linear infinite;
+        }
+
+        .pacman::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 0;
+            border: 15px solid #FFE53B;
+            border-radius: 15px;
+            border-right: 15px solid transparent;
+            animation: eat-bottom 0.3s linear infinite;
+        }
+
+        .pacman-eye {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: #000;
+            top: 8px;
+            left: 22px;
+            z-index: 1;
+        }
+
+        @keyframes eat-top {
+            0% {
+                transform: rotate(0deg);
+            }
+            50% {
+                transform: rotate(-45deg);
+            }
+            100% {
+                transform: rotate(0deg);
+            }
+        }
+
+        @keyframes eat-bottom {
+            0% {
+                transform: rotate(0deg);
+            }
+            50% {
+                transform: rotate(45deg);
+            }
+            100% {
+                transform: rotate(0deg);
+            }
+        }
+
+        .dots-line {
+            position: absolute;
+            width: calc(100% - 40px);
+            height: 6px;
+            display: flex;
+            justify-content: space-between;
+            padding: 0;
+            margin-left: 40px;
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            background: #FFE53B;
+            border-radius: 50%;
+            box-shadow: 0 0 4px rgba(255, 229, 59, 0.5);
+            position: relative;
+            animation: none;
+            transition: all 0.3s ease;
+        }
+
+        .dot.eaten {
+            background: #665c17;
+            box-shadow: 0 0 2px rgba(255, 229, 59, 0.2);
+            transform: scale(0.8);
+        }
+
+        @keyframes move-pacman {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(calc(380px - 30px));
+            }
+        }
+
+        @media (max-width: 480px) {
+            .pacman-line {
+                max-width: 300px;
+                height: 30px;
+            }
+
+            .pacman {
+                width: 24px;
+                height: 24px;
+                margin-left: 0;
+            }
+
+            .dots-line {
+                width: calc(100% - 32px);
+                margin-left: 32px;
+            }
+
+            .dot {
+                width: 4px;
+                height: 4px;
+            }
+
+            @keyframes move-pacman {
+                0% {
+                    transform: translateX(0);
+                }
+                100% {
+                    transform: translateX(calc(300px - 24px));
+                }
             }
         }
 
@@ -360,36 +542,12 @@
                 max-width: 700px;
             }
 
-            h1 {
-                font-size: 3em;
-            }
-
             .subtitle {
                 font-size: 1.2em;
             }
 
             .blind-box-front::after {
                 font-size: 50px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .title-container {
-                padding: 8px 30px;
-            }
-
-            h1::before {
-                right: calc(100% + 8px);
-                font-size: 18px;
-            }
-
-            h1::after {
-                left: calc(100% + 8px);
-                font-size: 18px;
-            }
-
-            h1 {
-                font-size: 1.5em;
             }
         }
 
@@ -783,6 +941,28 @@
         <div class="title-container">
             <h1 class="title">盲盒抽奖</h1>
             <p class="subtitle">小朋友们，和我一起开启快乐的一天</p>
+            <div class="pacman-line">
+                <div class="dots-line">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+                <div class="pacman">
+                    <div class="pacman-eye"></div>
+                </div>
+            </div>
         </div>
         <div class="blind-boxes-grid" id="blindBoxesGrid"></div>
     </div>
@@ -1011,7 +1191,57 @@
         }
 
         // 页面加载时初始化盲盒
-        document.addEventListener('DOMContentLoaded', initializeBlindBoxes);
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeBlindBoxes();
+            initializePacmanAnimation();
+        });
+
+        function initializePacmanAnimation() {
+            const pacman = document.querySelector('.pacman');
+            const dots = document.querySelectorAll('.dot');
+            const pacmanWidth = 30;
+            const containerWidth = 380;
+            const animationDuration = 8000; // 8秒
+            
+            // 计算每个豆子的位置
+            const dotPositions = Array.from(dots).map(dot => {
+                const rect = dot.getBoundingClientRect();
+                return rect.left;
+            });
+
+            // 动画开始时间
+            let startTime = null;
+
+            function animate(currentTime) {
+                if (!startTime) startTime = currentTime;
+                const elapsed = currentTime - startTime;
+
+                if (elapsed >= animationDuration) {
+                    startTime = currentTime;
+                    dots.forEach(dot => dot.classList.remove('eaten'));
+                }
+
+                // 计算吃豆人当前位置
+                const progress = (elapsed % animationDuration) / animationDuration;
+                const pacmanPosition = progress * (containerWidth - pacmanWidth);
+
+                // 获取吃豆人的实际位置
+                const pacmanRect = pacman.getBoundingClientRect();
+                const pacmanCenter = pacmanRect.left + pacmanRect.width / 2;
+
+                // 检查每个豆子是否被吃掉
+                dots.forEach((dot, index) => {
+                    const dotRect = dot.getBoundingClientRect();
+                    if (pacmanCenter > dotRect.left) {
+                        dot.classList.add('eaten');
+                    }
+                });
+
+                requestAnimationFrame(animate);
+            }
+
+            requestAnimationFrame(animate);
+        }
 
         const adminControlBtn = document.getElementById('adminControlBtn');
         const adminPanel = document.querySelector('.admin-panel');
