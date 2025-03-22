@@ -1,0 +1,89 @@
+{
+    "prizes": [
+        {
+            "name": "神秘奖品1",
+            "image": "images/icon1.jpeg",
+            "description": "恭喜你获得这个神秘奖品！",
+            "isClaimed": false,
+            "claimed_at": null
+        },
+        {
+            "name": "神秘奖品2",
+            "image": "images/icon2.jpeg",
+            "description": "这是一个特别的礼物！",
+            "isClaimed": false,
+            "claimed_at": null
+        },
+        {
+            "name": "神秘奖品3",
+            "image": "images/icon3.jpeg",
+            "description": "惊喜等着你！",
+            "isClaimed": false,
+            "claimed_at": null
+        },
+        {
+            "name": "神秘奖品4",
+            "image": "images/icon4.jpeg",
+            "description": "恭喜你获得这个神秘奖品！",
+            "isClaimed": false,
+            "claimed_at": null
+        },
+        {
+            "name": "神秘奖品5",
+            "image": "images/icon5.jpeg",
+            "description": "这是一个特别的礼物！",
+            "isClaimed": false,
+            "claimed_at": null
+        },
+        {
+            "name": "神秘奖品6",
+            "image": "images/icon6.jpeg",
+            "description": "惊喜等着你！",
+            "isClaimed": false,
+            "claimed_at": null
+        },
+        {
+            "name": "神秘奖品7",
+            "image": "images/icon7.jpeg",
+            "description": "恭喜你获得这个神秘奖品！",
+            "isClaimed": false,
+            "claimed_at": null
+        },
+        {
+            "name": "神秘奖品8",
+            "image": "images/icon8.jpeg",
+            "description": "这是一个特别的礼物！",
+            "isClaimed": false,
+            "claimed_at": null
+        },
+        {
+            "name": "神秘奖品9",
+            "image": "images/icon9.jpeg",
+            "description": "惊喜等着你！",
+            "isClaimed": false,
+            "claimed_at": null
+        },
+        {
+            "name": "神秘奖品10",
+            "image": "images/icon10.jpeg",
+            "description": "恭喜你获得这个神秘奖品！",
+            "isClaimed": false,
+            "claimed_at": null
+        },
+        {
+            "name": "神秘奖品11",
+            "image": "images/icon11.jpeg",
+            "description": "这是一个特别的礼物！",
+            "isClaimed": false,
+            "claimed_at": null
+        },
+        {
+            "name": "神秘奖品12",
+            "image": "images/icon12.jpeg",
+            "description": "惊喜等着你！",
+            "isClaimed": false,
+            "claimed_at": null
+        }
+    ],
+    "last_update": ""
+} 
