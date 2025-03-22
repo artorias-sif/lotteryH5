@@ -564,11 +564,36 @@
             width: 90%;
             max-width: 400px;
             color: #333;
+            position: relative;
         }
 
         .prize-form h2 {
             margin: 0 0 20px 0;
             color: #333;
+            padding-right: 40px;
+        }
+
+        .prize-form .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #666;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .prize-form .close-btn:hover {
+            background: rgba(0, 0, 0, 0.1);
+            transform: rotate(90deg);
         }
 
         .form-group {
@@ -770,6 +795,7 @@
 
     <div class="prize-modal" id="prizeModal">
         <div class="prize-form">
+            <button class="close-btn" onclick="closePrizeModal()">×</button>
             <h2>商品管理</h2>
             <div class="form-group">
                 <label for="prizeName">商品名称</label>
@@ -1037,10 +1063,10 @@
         });
 
         // 关闭商品管理面板
-        cancelPrizeBtn.addEventListener('click', () => {
+        function closePrizeModal() {
             prizeModal.classList.remove('active');
             resetForm();
-        });
+        }
 
         const imageInput = document.getElementById('imageInput');
         const imagePreview = document.getElementById('imagePreview');
