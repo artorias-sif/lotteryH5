@@ -1035,7 +1035,8 @@
     </div>
 
     <audio id="bgMusic" preload="auto" loop>
-        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3" type="audio/mpeg">
+        <source src="https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8c8a73467.mp3?filename=happy-logo-13397.mp3" type="audio/mpeg">
+        <source src="https://cdn.pixabay.com/download/audio/2021/11/13/audio_cb4f1212a9.mp3?filename=fun-life-112188.mp3" type="audio/mpeg">
     </audio>
 
     <div class="container">
@@ -1261,6 +1262,14 @@
 
             // 等待翻转动画完成后再更新内容
             setTimeout(() => {
+                // 确保音频上下文处于运行状态
+                if (soundManager.audioContext && soundManager.audioContext.state === 'suspended') {
+                    soundManager.audioContext.resume();
+                }
+                
+                // 播放音效
+                playFireworkSound();
+                
                 // 显示奖品
                 box.classList.add('opened');
                 box.innerHTML = `
@@ -1285,9 +1294,6 @@
                 // 创建烟花和撒花效果
                 const rect = box.getBoundingClientRect();
                 createFireworks(rect.left + rect.width / 2, rect.top + rect.height / 2);
-                
-                // 播放烟花音效
-                playFireworkSound();
             }, 400);
         }
 
@@ -1644,98 +1650,203 @@
             const bgMusic = document.getElementById('bgMusic');
             const musicControl = document.getElementById('musicControl');
 
-            // 设置音量
-            bgMusic.volume = 0.3;
-
             // 音乐播放状态管理
             let isPlaying = false;
+            let playAttempts = 0;
+            const maxAttempts = 3;
 
             // 尝试自动播放音乐的函数
             const playMusic = async () => {
+                if (playAttempts >= maxAttempts) {
+                    console.log('达到最大重试次数');
+                    return;
+                }
+
                 try {
+                    // 设置音量为较小的值
+                    bgMusic.volume = 0.2;
                     await bgMusic.play();
                     isPlaying = true;
                     musicControl.classList.remove('paused');
+                    console.log('音乐播放成功');
                 } catch (error) {
-                    console.log('自动播放被阻止:', error);
+                    console.log('音乐播放失败，尝试重试:', error);
+                    playAttempts++;
+                    
+                    // 如果当前音源失败，尝试切换到下一个音源
+                    const sources = bgMusic.getElementsByTagName('source');
+                    if (sources.length > 1) {
+                        const currentSource = sources[0];
+                        bgMusic.removeChild(currentSource);
+                        bgMusic.appendChild(currentSource);
+                        bgMusic.load();
+                        setTimeout(playMusic, 1000);
+                    }
+                    
                     isPlaying = false;
                     musicControl.classList.add('paused');
                 }
             };
 
-            // 点击音乐控制按钮
-            musicControl.addEventListener('click', async () => {
-                if (bgMusic.paused) {
+            // 监听用户交互事件来触发音乐播放
+            const startPlayback = async () => {
+                if (!isPlaying && bgMusic.paused) {  // 只有在音乐暂停且未播放状态时才尝试播放
+                    playAttempts = 0; // 重置尝试次数
+                    await playMusic();
+                }
+            };
+
+            // 添加用户交互事件监听器（只在初始化时需要）
+            const initAutoPlay = () => {
+                const playHandler = async () => {
+                    await startPlayback();
+                    // 一旦音乐开始播放，移除所有自动播放的事件监听器
+                    ['click', 'touchstart', 'keydown'].forEach(event => {
+                        document.removeEventListener(event, playHandler);
+                    });
+                };
+
+                ['click', 'touchstart', 'keydown'].forEach(event => {
+                    document.addEventListener(event, playHandler);
+                });
+            };
+
+            // 初始化自动播放
+            initAutoPlay();
+
+            // 监听音乐加载错误事件
+            bgMusic.addEventListener('error', (e) => {
+                console.error('音乐加载失败:', e);
+                // 尝试切换到备选音源
+                const sources = bgMusic.getElementsByTagName('source');
+                if (sources.length > 1) {
+                    const currentSource = sources[0];
+                    bgMusic.removeChild(currentSource);
+                    bgMusic.appendChild(currentSource);
+                    bgMusic.load();
                     playMusic();
-                } else {
-                    bgMusic.pause();
-                    isPlaying = false;
-                    musicControl.classList.add('paused');
                 }
             });
 
             // 监听音乐播放状态
-            bgMusic.addEventListener('playing', () => {
+            bgMusic.addEventListener('play', () => {
                 isPlaying = true;
                 musicControl.classList.remove('paused');
+                console.log('音乐开始播放');
             });
 
             bgMusic.addEventListener('pause', () => {
                 isPlaying = false;
                 musicControl.classList.add('paused');
+                console.log('音乐已暂停');
             });
 
-            // 监听音乐加载错误事件
-            bgMusic.addEventListener('error', (e) => {
-                console.error('音乐加载失败:', e);
-                bgMusic.src = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
-                bgMusic.load();
-                playMusic();
+            bgMusic.addEventListener('ended', () => {
+                isPlaying = false;
+                musicControl.classList.add('paused');
+                console.log('音乐播放结束');
             });
 
-            // 监听音乐加载完成事件
-            bgMusic.addEventListener('canplaythrough', () => {
-                playMusic();
+            // 点击音乐控制按钮
+            musicControl.addEventListener('click', async () => {
+                try {
+                    if (bgMusic.paused) {
+                        await bgMusic.play();
+                    } else {
+                        bgMusic.pause();
+                    }
+                } catch (error) {
+                    console.error('音乐控制失败:', error);
+                }
             });
-
-            // 监听用户交互事件来触发音乐播放
-            const startPlayback = () => {
-                playMusic();
-                // 移除事件监听器
-                document.removeEventListener('click', startPlayback);
-                document.removeEventListener('touchstart', startPlayback);
-                document.removeEventListener('keydown', startPlayback);
-            };
-
-            // 添加用户交互事件监听器
-            document.addEventListener('click', startPlayback);
-            document.addEventListener('touchstart', startPlayback);
-            document.addEventListener('keydown', startPlayback);
 
             // 尝试立即播放
             playMusic();
+
+            // 初始化音频元素
+            const initAudio = () => {
+                bgMusic.volume = 0.2;  // 设置初始音量
+                bgMusic.load();  // 确保音频被加载
+                
+                // 添加错误处理
+                bgMusic.addEventListener('error', (e) => {
+                    console.error('音频加载错误:', e);
+                    isPlaying = false;
+                    musicControl.classList.add('paused');
+                });
+            };
+
+            // 确保音频元素正确初始化
+            initAudio();
         });
 
-        // 创建一个专门的音效播放函数
-        function playFireworkSound() {
-            try {
-                // 创建一个新的音频实例
-                const audio = new Audio();
-                audio.src = 'https://assets.mixkit.co/active_storage/sfx/2870/2870-preview.mp3';
-                audio.volume = 1.0;
-                
-                // 播放完成后自动清理
-                audio.addEventListener('ended', () => {
-                    audio.remove();
-                });
+        // 创建一个音效管理器
+        const soundManager = {
+            audioContext: null,
+            soundBuffer: null,
+            isInitialized: false,
 
-                // 播放音效
-                audio.play().catch(error => {
-                    console.log('播放烟花音效失败:', error);
-                });
-            } catch (error) {
-                console.log('创建音效实例失败:', error);
+            async initialize() {
+                try {
+                    // 创建音频上下文
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.audioContext = new AudioContext();
+                    
+                    // 创建一个简单的"叮"的声音
+                    const duration = 0.1;
+                    const sampleRate = this.audioContext.sampleRate;
+                    this.soundBuffer = this.audioContext.createBuffer(1, duration * sampleRate, sampleRate);
+                    const channelData = this.soundBuffer.getChannelData(0);
+                    
+                    for (let i = 0; i < duration * sampleRate; i++) {
+                        // 创建一个简单的衰减正弦波
+                        const t = i / sampleRate;
+                        channelData[i] = Math.sin(2 * Math.PI * 880 * t) * Math.exp(-10 * t);
+                    }
+                    
+                    this.isInitialized = true;
+                    console.log('音效系统初始化成功');
+                } catch (error) {
+                    console.error('音效系统初始化失败:', error);
+                }
+            },
+
+            play() {
+                if (!this.isInitialized || !this.audioContext || !this.soundBuffer) {
+                    console.warn('音效系统未初始化');
+                    return;
+                }
+
+                try {
+                    // 创建音源
+                    const source = this.audioContext.createBufferSource();
+                    source.buffer = this.soundBuffer;
+                    
+                    // 创建音量控制
+                    const gainNode = this.audioContext.createGain();
+                    gainNode.gain.value = 0.3; // 设置音量
+                    
+                    // 连接节点
+                    source.connect(gainNode);
+                    gainNode.connect(this.audioContext.destination);
+                    
+                    // 播放音效
+                    source.start();
+                    console.log('音效播放成功');
+                } catch (error) {
+                    console.error('音效播放失败:', error);
+                }
             }
+        };
+
+        // 初始化音效系统
+        document.addEventListener('DOMContentLoaded', () => {
+            soundManager.initialize();
+        });
+
+        // 修改播放音效的函数
+        function playFireworkSound() {
+            soundManager.play();
         }
     </script>
 </body>
