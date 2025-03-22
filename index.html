@@ -70,7 +70,7 @@
         h1::before, h1::after {
             content: '🎁';
             position: absolute;
-            font-size: 20px;
+            font-size: 24px;
             top: 50%;
             transform: translateY(-50%);
             animation: bounce 2s infinite;
@@ -79,15 +79,16 @@
             background: none;
             -webkit-background-clip: initial;
             -webkit-text-fill-color: initial;
+            pointer-events: none;
         }
 
         h1::before {
-            right: calc(100% + 10px);
+            right: calc(100% + 15px);
             animation-delay: 0s;
         }
 
         h1::after {
-            left: calc(100% + 10px);
+            left: calc(100% + 15px);
             animation-delay: 0.5s;
         }
 
@@ -378,13 +379,13 @@
             }
 
             h1::before {
-                right: calc(100% + 5px);
-                font-size: 16px;
+                right: calc(100% + 8px);
+                font-size: 18px;
             }
 
             h1::after {
-                left: calc(100% + 5px);
-                font-size: 16px;
+                left: calc(100% + 8px);
+                font-size: 18px;
             }
 
             h1 {
